@@ -2,23 +2,68 @@
 # startup an application
 # optional input nodaemon, when service is managed by system daemon like systemd or upstart
 
-abspath=$(cd ${0%/*} && echo $PWD/${0##*/})
-SCRIPT_DIR=`dirname "$abspath"`
-PACKAGE_ROOT=$SCRIPT_DIR/../..
-echo "SCRIPT_DIR=$SCRIPT_DIR"
-echo "PACKAGE_ROOT=$PACKAGE_ROOT"
+abspath=$(cd -P ${0%/*} && echo $PWD/${0##*/}) # absolute path of this script
+scripts_dir=`dirname "$abspath"` # scripts dir (i.e. where this script is located)
+packages_dir=$(cd -P $scripts_dir/../.. && echo $PWD) # package root
 
-SERVICE_NAME=pyserver
-cd $PACKAGE_ROOT
-echo "Startup ${SERVICE_NAME} - pwd = `pwd`"
-nohup python -m SimpleHTTPServer 8999 > /dev/null 2>&1 &
-echo $! > ${SERVICE_NAME}.pid
+hostname=`hostname`
+app_name="pyserver"
+port=8999 # check port available
+ecv_url="http://$hostname:$port" # check app is up running
 
-if [ ! -f ${SERVICE_NAME}.pid ]; then
-    echo "Error: Unable to find ${SERVICE_NAME}.pid"
-    exit -1
+nodaemon=false
+if [[ $1 == "nodaemon" ]]; then
+    nodaemon=true
 fi
 
-echo "Done"
+echo "Startup app $app_name"
+echo "abspath = $abspath"
+echo "scripts_dir = $scripts_dir"
+echo "packages_dir = $packages_dir"
 
+check_port() {
+    if [ -z $(lsof -t -P -i:$1) ]; then
+        echo " Port $1 is not occupied"
+    else
+        pid=$(lsof -t -P -i:$1)
+        echo " Port $1 is occupied by process $pid, killing it"
+        kill -9 $pid
+    fi
+}
+
+# make sure the ports are available
+echo "Checking ports ..."
+check_port $port
+
+cd $packages_dir
+echo "Starting app from $PWD"
+
+if [[ $nodaemon == true ]]; then
+    echo "Starting app nodaemon"
+    python -m SimpleHTTPServer $port > /dev/null 2>&1 
+else
+    echo 'Starting app'
+    nohup setsid python -m SimpleHTTPServer $port > /dev/null 2>&1 &
+    echo $! > "$packages_dir/$app_name.pid";
+
+    if [[ ! -f $app_name.pid ]]; then
+        echo "Error: Unable to find $app_name.pid"
+        exit -1
+    fi
+fi
+
+# Wait for app to come up and run the ecv check
+ecv_check=false
+ecv_check_value="hello cronus!"
+let tries=0
+
+while [[ $ecv_check != $ecv_check_value ]] ; do
+    let tries=$tries+1
+    if [[ $tries -gt 10 ]]; then exit 1; fi
+    sleep 3
+    echo "[AGENT_MESSAGE] +1 [AGENT_MESSAGE_END]"
+    ecv_check=`curl -qsS $ecv_url 2>/dev/null | sed -e 's/\([a-z]*\)/\1/'`
+done;
+
+echo "Success. App is running."
 exit 0

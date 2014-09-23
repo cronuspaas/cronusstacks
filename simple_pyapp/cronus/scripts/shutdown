@@ -1,19 +1,29 @@
 #!/bin/bash -ae
+#
 # shutdown an application
 
-abspath=$(cd ${0%/*} && echo $PWD/${0##*/})
-SCRIPT_DIR=`dirname "$abspath"`
-PACKAGE_ROOT=$SCRIPT_DIR/../..
-echo "SCRIPT_DIR=$SCRIPT_DIR"
-echo "PACKAGE_ROOT=$PACKAGE_ROOT"
+abspath=$(cd -P ${0%/*} && echo $PWD/${0##*/}) # absolute path of this script
+scripts_dir=`dirname "$abspath"` # scripts dir (i.e. where this script is located)
+packages_dir=$(cd -P $scripts_dir/../.. && echo $PWD) # root of this package 
 
-SERVICE_NAME=pyserver
+hostname=`hostname`
+app_name="pyserver"
 
-cd $PACKAGE_ROOT
-echo "shutdown $SERVICE_NAME"
-if [ -f ${SERVICE_NAME}.pid ]; then
-  cat ${SERVICE_NAME}.pid | xargs kill
-  rm -f ${SERVICE_NAME}.pid
+echo "Shutdown app $app_name"
+echo "abspath = $abspath"
+echo "scripts_dir = $scripts_dir"
+echo "packages_dir = $packages_dir"
+
+nodaemon=false
+if [[ $1 == "nodaemon" ]]; then
+    nodaemon=true
 fi
 
+echo "Stopping in $PWD"
+if [[ $nodaemon == false ]] && [[ -f $app_name.pid ]]; then
+    kill `cat $packages_dir/$app_name.pid`
+    rm -f $packages_dir/$app_name.pid
+fi
+
+echo "Done."
 exit 0
