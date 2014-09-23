@@ -18,9 +18,12 @@ nodaemon=false
 if [[ $1 == "nodaemon" ]]; then
     nodaemon=true
 fi
+echo "nodaemon = $nodaemon"
 
 echo "Stopping in $PWD"
-if [[ $nodaemon == false ]] && [[ -f $app_name.pid ]]; then
+cd $packages_dir
+if [[ $nodaemon == false ]] && [[ -f $packages_dir/$app_name.pid ]]; then
+    echo "Stopping `cat $packages_dir/$app_name.pid`"
     kill `cat $packages_dir/$app_name.pid`
     rm -f $packages_dir/$app_name.pid
 fi
