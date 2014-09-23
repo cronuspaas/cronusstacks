@@ -1,0 +1,19 @@
+#!/bin/bash -ae
+# shutdown an application
+
+abspath=$(cd ${0%/*} && echo $PWD/${0##*/})
+SCRIPT_DIR=`dirname "$abspath"`
+PACKAGE_ROOT=$SCRIPT_DIR/../..
+echo "SCRIPT_DIR=$SCRIPT_DIR"
+echo "PACKAGE_ROOT=$PACKAGE_ROOT"
+
+SERVICE_NAME=pyserver
+
+cd $PACKAGE_ROOT
+echo "shutdown $SERVICE_NAME"
+if [ -f ${SERVICE_NAME}.pid ]; then
+  cat ${SERVICE_NAME}.pid | xargs kill
+  rm -f ${SERVICE_NAME}.pid
+fi
+
+exit 0

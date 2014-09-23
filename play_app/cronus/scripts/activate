@@ -1,0 +1,46 @@
+#!/bin/bash
+
+# Jeff Pei (ypei@ebay.com)
+# For Superman deployment: activate script script: just do once for the copy
+# https://wiki.vip.corp.ebay.com/display/CLOUD/Java+Example
+# Path is the most tricky part. be very careful. do not assume current path .
+# 05/15/2015
+
+app_name=helloworld
+play_name=container_runtime
+abspath=$(cd ${0%/*} && echo $PWD/${0##*/})
+
+# e.g. /home/ypei/GitSources/AgentMaster/AgentMaster/cronus/scripts
+scripts_dir=`dirname "$abspath"`
+
+# has play, AgentMaster (app) /home/ypei/GitSources/AgentMaster/AgentMaster/cronus/scripts/../..
+am_root_dir="$scripts_dir/../.."
+
+# the app; has conf
+am_app_dir="$scripts_dir/../../$app_name"
+
+# the conf folder; has conf
+am_app_conf_dir="$scripts_dir/../../$app_name/conf"
+
+# y /home/ypei/GitSources/AgentMaster/AgentMaster/cronus/scripts/../../play-1.2.4
+play_dir="$scripts_dir/../../$play_name"
+
+# enter the scripts_dir; this is critical for application log
+cd $scripts_dir
+
+# copy the .conf files 
+echo 'copy the .conf files '
+
+# Stopping the current play application: safety meature. make the startup idempotent
+echo 'stopping current superman if any already running; removing pid if any'
+$play_dir/play stop $am_app_dir
+
+rm -f "$am_app_dir/server.pid"
+
+
+# Starting application 
+
+echo 'precomiling app...'
+$play_dir/play precompile $am_app_dir; sleep 1;
+
+echo 'precomiled app... Activation completed.'

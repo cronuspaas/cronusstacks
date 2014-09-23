@@ -1,0 +1,24 @@
+#!/bin/bash -ae
+# startup an application
+# optional input nodaemon, when service is managed by system daemon like systemd or upstart
+
+abspath=$(cd ${0%/*} && echo $PWD/${0##*/})
+SCRIPT_DIR=`dirname "$abspath"`
+PACKAGE_ROOT=$SCRIPT_DIR/../..
+echo "SCRIPT_DIR=$SCRIPT_DIR"
+echo "PACKAGE_ROOT=$PACKAGE_ROOT"
+
+SERVICE_NAME=pyserver
+cd $PACKAGE_ROOT
+echo "Startup ${SERVICE_NAME} - pwd = `pwd`"
+nohup python -m SimpleHTTPServer 8999 > /dev/null 2>&1 &
+echo $! > ${SERVICE_NAME}.pid
+
+if [ ! -f ${SERVICE_NAME}.pid ]; then
+    echo "Error: Unable to find ${SERVICE_NAME}.pid"
+    exit -1
+fi
+
+echo "Done"
+
+exit 0

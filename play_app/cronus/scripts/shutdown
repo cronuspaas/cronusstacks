@@ -1,0 +1,39 @@
+#!/bin/bash
+
+# Jeff Pei (ypei@ebay.com)
+# For Superman deployment: shutdown script
+# https://wiki.vip.corp.ebay.com/display/CLOUD/Java+Example
+# Path is the most tricky part. be very careful. do not assume current path .
+# 05/15/2015
+
+app_name=helloworld
+play_name=container_runtime
+abspath=$(cd ${0%/*} && echo $PWD/${0##*/})
+
+# e.g. /home/ypei/GitSources/AgentMaster/AgentMaster/cronus/scripts
+scripts_dir=`dirname "$abspath"`
+
+abspath=$(cd ${0%/*} && echo $PWD/${0##*/})
+
+# the app; has conf
+am_app_dir="$scripts_dir/../../$app_name"
+
+# the conf folder; has conf
+am_app_conf_dir="$scripts_dir/../../$app_name/conf"
+
+# y /home/ypei/GitSources/AgentMaster/AgentMaster/cronus/scripts/../../play-1.2.4
+play_dir="$scripts_dir/../../$play_name"
+
+# 20140528 shutdown LB to disable traffic and sleep 10 seconds
+#echo 'shutdown LB to disable traffic as soft mark down and sleep 15 seconds. Assuming on 8080 with http'
+#curl -sS http://localhost:8080/config/setEnableLoadBalancer?enableLoadBalancer=false
+#sleep 15
+
+# Stopping the current play application: safety meature. make the startup idempotent
+echo 'stopping app'
+$play_dir/play stop $am_app_dir
+
+echo 'removing pid'
+rm -f "$am_app_dir/server.pid"
+
+echo 'App stopped!'

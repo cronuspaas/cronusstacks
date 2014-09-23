@@ -1,0 +1,10 @@
+#!/bin/bash -ae
+# deactivate an application
+
+abspath=$(cd ${0%/*} && echo $PWD/${0##*/})
+SCRIPT_DIR=`dirname "$abspath"`
+PACKAGE_ROOT=$SCRIPT_DIR/../..
+echo "SCRIPT_DIR=$SCRIPT_DIR"
+echo "PACKAGE_ROOT=$PACKAGE_ROOT"
+
+exit 0

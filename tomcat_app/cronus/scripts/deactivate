@@ -1,0 +1,28 @@
+#!/bin/bash
+set -e
+
+abspath=$(cd ${0%/*} && echo $PWD/${0##*/})
+scripts_dir=`dirname "$abspath"`
+package_dir=$scripts_dir/../..
+container_home=$package_dir/container_runtime
+
+echo -e "\nscripts_dir is $scripts_dir"
+echo -e "\npackage_dir is $package_dir"
+echo -e "\ncontainer_home is $container_home"
+echo -e "\nDeactivating application..."
+
+echo -e "\nDelete inflated web application from container..."
+application_dir=$package_dir/wars
+echo -e "\napplication_dir is $application_dir"
+
+for app in $application_dir/*.war
+do
+   echo "app is $app"
+   app_dir=${app##*/}
+   app_dir=${app_dir%.war}
+   echo -e "\nDelete $app from $container_home/webapps/$app_dir"
+   rm -rf $container_home/webapps/$app_dir
+done
+
+echo -e "\nDeactivated application"
+

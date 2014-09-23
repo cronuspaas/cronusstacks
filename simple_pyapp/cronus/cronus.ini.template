@@ -1,0 +1,8 @@
+# comments, please remove in the real file
+# logDirs: list of directories (path relative to package root) that will be exposed by agent in validate internal - appLogs page
+# cfgFiles: list of application config files that will be replaced by agent based on env value passed in, e.g. app.conf.production will be copied to app.conf by agent if env="production" in agent call to deploy the service
+
+{
+  "logDirs":["myapp/logs"],
+  "cfgFiles": ["myapp/conf/app.conf"]
+}

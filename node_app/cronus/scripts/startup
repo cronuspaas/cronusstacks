@@ -1,0 +1,84 @@
+#!/bin/bash
+#
+# dir structure is as follows
+
+abspath=$(cd -P ${0%/*} && echo $PWD/${0##*/}) # absolute path of this script
+scripts_dir=`dirname "$abspath"` # scripts dir (i.e. where this script is located)
+packages_dir=$(cd -P $scripts_dir/../.. && echo $PWD) # used to unpack node
+
+hostname=`hostname`
+app_name=helloworld
+rt_name=container_runtime
+port=1337
+ecv_url=http://$hostname:$port
+
+app_dir=$(cd -P $scripts_dir/../../$app_name && echo $PWD) # used to unpack and start the app
+rt_dir=$(cd -P $scripts_dir/../../$rt_name && echo $PWD) # used to unpack and start the app
+
+nodaemon=false
+if [[ $1 == "nodaemon" ]]; then
+    nodaemon=true
+fi
+
+echo "Startup node app $app_name"
+echo "abspath = $abspath"
+echo "scripts_dir = $scripts_dir"
+echo "packages_dir = $packages_dir"
+echo "app_dir = $app_dir"
+echo "rt_dir = $rt_dir"
+echo "ecv_url = $ecv_url"
+
+check_port() {
+    if [ -z $(lsof -t -P -i:$1) ]; then
+        echo " Port $1 is not occupied"
+    else
+        pid=$(lsof -t -P -i:$1)
+        echo " Port $1 is occupied by process $pid, killing it"
+        kill -9 $pid
+    fi
+}
+
+# make sure the ports are available
+echo "Checking ports ..."
+check_port $port
+
+cd $app_dir
+
+echo "Starting node from $PWD"
+
+if [[ $nodaemon == true ]]; then
+    echo "Starting app nodaemon"
+    $rt_dir/bin/node server > $scripts_dir/logs/node.log 2>&1 
+else
+    echo 'Starting app'
+    nohup setsid $rt_dir/bin/node server > $scripts_dir/logs/node.log 2>&1 &
+    echo $! > "$packages_dir/$app_name.pid";
+
+    if [[ ! -f $app_name.pid ]]; then
+        echo "Error: Unable to find $app_name.pid"
+        exit -1
+    fi
+fi
+
+
+nohup setsid $rt_dir/bin/node server > $scripts_dir/logs/node.log 2>&1 &
+echo $! > "$packages_dir/$app_name.pid";
+
+# Wait for node to come up and run the ecv check
+bash -c "ecv_check='false'
+  let tries=0
+  while [ \"\$ecv_check\" != \"Hello World\" ] ; do
+    let tries=\$tries+1
+    if [ \$tries -gt 3 ]; then exit 1; fi
+    sleep 3
+    ecv_check=\`curl -qsS $ecv_url 2>/dev/null | sed -e 's/\([a-z]*\)/\1/'\`
+  done;" > /dev/null &
+
+wait $!
+if [ $? -ne 0 ]; then
+  echo "Failure. Check log files."
+  exit 1;
+fi
+
+echo "Success. Node app is running."
+exit 0
