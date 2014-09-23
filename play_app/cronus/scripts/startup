@@ -7,12 +7,12 @@ scripts_dir=`dirname "$abspath"` # scripts dir (i.e. where this script is locate
 packages_dir=$(cd -P $scripts_dir/../.. && echo $PWD) # package root
 
 hostname=`hostname`
-app_name="play_hw"
+app_name="helloworld"
 port=8998 # check port available
 ecv_url="http://$hostname:$port" # check app is up running
 
-app_dir="$package_dir/$app_name" # app code
-rt_dir="$package_dir/container_runtime" # container runtime
+app_dir="$packages_dir/$app_name" # app code
+rt_dir="$packages_dir/container_runtime" # container runtime
 
 nodaemon=false
 if [[ $1 == "nodaemon" ]]; then

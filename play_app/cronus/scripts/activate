@@ -5,10 +5,10 @@ abspath=$(cd -P ${0%/*} && echo $PWD/${0##*/}) # absolute path of this script
 scripts_dir=`dirname "$abspath"` # scripts dir (i.e. where this script is located)
 packages_dir=$(cd -P $scripts_dir/../.. && echo $PWD) # package root
 
-app_name="play_hw"
+app_name="helloworld"
 
-app_dir="$package_dir/$app_name" # app code
-rt_dir="$package_dir/container_runtime" # container runtime
+app_dir="$packages_dir/$app_name" # app code
+rt_dir="$packages_dir/container_runtime" # container runtime
 
 echo "Activate app $app_name"
 echo "abspath = $abspath"
