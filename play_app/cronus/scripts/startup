@@ -1,4 +1,4 @@
-#!/bin/bash -ae
+#!/bin/bash -a
 # startup an application
 # optional input nodaemon, when service is managed by system daemon like systemd or upstart
 
@@ -53,10 +53,10 @@ else
 fi
 
 # Wait for app to come up and run the ecv check
-ecv_check=false
+echo "Check app readiness $ecv_url"
 tries=0
+ecv_check=000
 
-ecv_check=`curl -s -L --head -o /dev/null -w "%{http_code}" $ecv_url`
 while [[ $ecv_check == 000 ]] ; do
     let tries=$tries+1
     if [[ $tries -gt 10 ]]; then exit 1; fi

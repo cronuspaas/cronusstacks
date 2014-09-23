@@ -1,35 +1,64 @@
-#!/bin/bash -ae
+#!/bin/bash
+# startup an application
+# optional input nodaemon, when service is managed by system daemon like systemd or upstart
 
-abspath=$(cd ${0%/*} && echo $PWD/${0##*/})
-scripts_dir=`dirname "$abspath"`
-echo "scripts_dir $scripts_dir"
+abspath=$(cd -P ${0%/*} && echo $PWD/${0##*/}) # absolute path of this script
+scripts_dir=`dirname "$abspath"` # scripts dir (i.e. where this script is located)
+packages_dir=$(cd -P $scripts_dir/../.. && echo $PWD) # package root
 
-validation_url="http://localhost:8080/helloworld"
+hostname=`hostname`
+port=8080
+ecv_url="http://$hostname:$port" # check app is up running
 
-if [ ! -z "$1" ]; then
-    echo "Starting app nodaemon"
-    $scripts_dir/../../container_runtime/bin/catalina.sh run
-else
-    echo 'Starting app'
-    $scripts_dir/../../container_runtime/bin/catalina.sh start
+rt_dir="$packages_dir/container_runtime" # container runtime
+
+nodaemon=false
+if [[ $1 == "nodaemon" ]]; then
+    nodaemon=true
 fi
 
-echo -e "Waiting for application to start completely..."
+echo "abspath = $abspath"
+echo "scripts_dir = $scripts_dir"
+echo "packages_dir = $packages_dir"
+echo "rt_dir = $rt_dir"
+echo "ecv_url = $ecv_url"
 
-# poll until the application started completely
-while true;
-do
-   export status=$(curl -s -L --head -o /dev/null -w "%{http_code}" $validation_url)
-   # check if the status has a non-zero length
-   if [ "$status" == 000 ]
-   then
-      echo "Application has yet started. status=$status"
-      sleep 1
-   else
-      echo "Application has started!! status=$status"
-      break
-   fi
-done
+check_port() {
+    if [ -z $(lsof -t -P -i:$1) ]; then
+        echo " Port $1 is not occupied"
+    else
+        pid=$(lsof -t -P -i:$1)
+        echo " Port $1 is occupied by process $pid, killing it"
+        kill -9 $pid
+    fi
+}
+
+# make sure the ports are available
+echo "Checking ports ..."
+check_port $port
+
+cd $packages_dir
+echo "Starting app from $PWD"
+
+if [[ $nodaemon == true ]]; then
+    echo "Starting app nodaemon"
+    $rt_dir/bin/catalina.sh run 
+else
+    echo 'Starting app'
+    $rt_dir/bin/catalina.sh start
+fi
+
+# Wait for app to come up and run the ecv check
+ecv_check=000
+tries=0
+
+while [[ $ecv_check == 000 ]] ; do
+    let tries=$tries+1
+    if [[ $tries -gt 10 ]]; then exit 1; fi
+    sleep 3
+    echo "[AGENT_MESSAGE] +1 [AGENT_MESSAGE_END]"
+    ecv_check=$(curl -s -L --head -o /dev/null -w "%{http_code}" $validation_url)
+    echo $ecv_check
+done;
 
 exit 0
-

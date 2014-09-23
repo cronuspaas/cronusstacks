@@ -29,6 +29,7 @@ echo "Stopping in $PWD"
 if [[ $nodaemon == false ]]; then
     $rt_dir/play stop $app_dir
 fi
+rm -f $app_dir/server.pid
 
 echo "Done."
 exit 0

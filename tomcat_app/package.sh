@@ -14,8 +14,6 @@ pushd helloworld
 mvn clean package
 popd
 
-rm -rf target_cronus
-
 DIR=$(cd "$(dirname "$0")"; pwd)
 appname="tomcat_hw"
 version="0.1.`date +%Y%m%d%H%M`"

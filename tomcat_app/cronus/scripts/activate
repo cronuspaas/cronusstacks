@@ -1,38 +1,43 @@
-#!/bin/bash
-set -e
+#!/bin/bash 
+# this script activate an application
 
-abspath=$(cd ${0%/*} && echo $PWD/${0##*/})
-scripts_dir=`dirname "$abspath"`
-package_dir=$scripts_dir/../..
-container_home=$package_dir/container_runtime
+abspath=$(cd -P ${0%/*} && echo $PWD/${0##*/}) # absolute path of this script
+scripts_dir=`dirname "$abspath"` # scripts dir (i.e. where this script is located)
+packages_dir=$(cd -P $scripts_dir/../.. && echo $PWD) # package root
 
-echo -e "\nscripts_dir is $scripts_dir"
-echo -e "\npackage_dir is $package_dir"
-echo -e "\ncontainer_home is $container_home"
-echo -e "\nActivating application..."
+rt_dir="$packages_dir/container_runtime" # container runtime
 
-echo -e "\nCreating container logs folder..."
+echo "Activate app $app_name"
+echo "abspath = $abspath"
+echo "scripts_dir = $scripts_dir"
+echo "packages_dir = $packages_dir"
+echo "app_dir = $app_dir"
+echo "rt_dir = $rt_dir"
+
+
+echo -e "Creating container logs folder..."
 mkdir -p $container_home/logs
-echo -e "\nChange access right to container/logs"
 chmod 755 $container_home/logs
 
-echo -e "\nSetting the required permissions to container bin directory"
+echo -e "Setting the required permissions to container bin directory"
 chmod 755 $container_home/bin/*
 
-echo -e "\nCopying web application to container..."
-application_dir=$package_dir/wars
-echo -e "\napplication_dir is $application_dir"
+echo -e "Copying web application to container..."
+war_dir=$package_dir/wars
+echo -e "war_dir = $war_dir"
 
-for app in $application_dir/*.war
+for app in $war_dir/*.war
 do
    echo "app is $app"
    #cp $app $container_home/webapps
    app_dir=${app##*/}
    app_dir=${app_dir%.war}
-   mkdir -p $container_home/webapps/$app_dir
-   echo -e "\nUnzip $app to $container_home/webapps/$app_dir"
-   cd $container_home/webapps/$app_dir
+   mkdir -p $rt_dir/webapps/$app_dir
+   echo -e "Unzip $app to $rt_dir/webapps/$app_dir"
+   cd $rt_dir/webapps/$app_dir
    jar xvf $app
 done
 
-echo -e "\nActivated application"
+echo -e "Activated application"
+
+exit 0
