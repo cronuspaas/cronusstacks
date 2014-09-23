@@ -1,39 +1,34 @@
-#!/bin/bash
+#!/bin/bash -ae
+#
+# shutdown an application
 
-# Jeff Pei (ypei@ebay.com)
-# For Superman deployment: shutdown script
-# https://wiki.vip.corp.ebay.com/display/CLOUD/Java+Example
-# Path is the most tricky part. be very careful. do not assume current path .
-# 05/15/2015
+abspath=$(cd -P ${0%/*} && echo $PWD/${0##*/}) # absolute path of this script
+scripts_dir=`dirname "$abspath"` # scripts dir (i.e. where this script is located)
+packages_dir=$(cd -P $scripts_dir/../.. && echo $PWD) # root of this package 
 
-app_name=helloworld
-play_name=container_runtime
-abspath=$(cd ${0%/*} && echo $PWD/${0##*/})
+hostname=`hostname`
+app_name="play_hw"
 
-# e.g. /home/ypei/GitSources/AgentMaster/AgentMaster/cronus/scripts
-scripts_dir=`dirname "$abspath"`
+app_dir=$package_dir/$app_name  # used to start the app
+rt_dir="$package_dir/container_runtime" # location of container runtime
 
-abspath=$(cd ${0%/*} && echo $PWD/${0##*/})
+echo "Shutdown app $app_name"
+echo "abspath = $abspath"
+echo "scripts_dir = $scripts_dir"
+echo "packages_dir = $packages_dir"
+echo "app_dir = $app_dir"
+echo "rt_dir = $rt_dir"
 
-# the app; has conf
-am_app_dir="$scripts_dir/../../$app_name"
+nodaemon=false
+if [[ $1 == "nodaemon" ]]; then
+    nodaemon=true
+fi
 
-# the conf folder; has conf
-am_app_conf_dir="$scripts_dir/../../$app_name/conf"
+cd $packages_dir
+echo "Stopping in $PWD"
+if [[ $nodaemon == false ]]; then
+    $rt_dir/play stop $app_dir
+fi
 
-# y /home/ypei/GitSources/AgentMaster/AgentMaster/cronus/scripts/../../play-1.2.4
-play_dir="$scripts_dir/../../$play_name"
-
-# 20140528 shutdown LB to disable traffic and sleep 10 seconds
-#echo 'shutdown LB to disable traffic as soft mark down and sleep 15 seconds. Assuming on 8080 with http'
-#curl -sS http://localhost:8080/config/setEnableLoadBalancer?enableLoadBalancer=false
-#sleep 15
-
-# Stopping the current play application: safety meature. make the startup idempotent
-echo 'stopping app'
-$play_dir/play stop $am_app_dir
-
-echo 'removing pid'
-rm -f "$am_app_dir/server.pid"
-
-echo 'App stopped!'
+echo "Done."
+exit 0

@@ -53,7 +53,7 @@ else
 fi
 
 # Wait for app to come up and run the ecv check
-ecv_check=false
+ecv_check=`curl -qsS $ecv_url 2>/dev/null | sed -e 's/\([a-z]*\)/\1/'`
 ecv_check_value="hello cronus!"
 tries=0
 
