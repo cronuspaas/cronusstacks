@@ -54,7 +54,7 @@ else
     nohup setsid $rt_dir/bin/node server > $scripts_dir/logs/node.log 2>&1 &
     echo $! > "$packages_dir/$app_name.pid";
 
-    if [[ ! -f $app_name.pid ]]; then
+    if [[ ! -f $packages_dir/$app_name.pid ]]; then
         echo "Error: Unable to find $app_name.pid"
         exit -1
     fi
@@ -67,7 +67,7 @@ echo $! > "$packages_dir/$app_name.pid";
 # Wait for node to come up and run the ecv check
 bash -c "ecv_check='false'
   let tries=0
-  while [ \"\$ecv_check\" != \"Hello World\" ] ; do
+  while [ \"\$ecv_check\" != \"Hello Cronus from Node\" ] ; do
     let tries=\$tries+1
     if [ \$tries -gt 3 ]; then exit 1; fi
     sleep 3
