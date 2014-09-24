@@ -1,0 +1,14 @@
+[Unit]
+Description=My Application
+
+[Service]
+# PATH_TO_PACKAGE, APP_USER will be replaced when agent setup the service
+TimeoutStartSec=0
+User=APP_USER
+ExecStart=PATH_TO_PACKAGE/cronus/scripts/startup nodaemon
+ExecStopPost=-PATH_TO_PACKAGE/cronus/scripts/shutdown nodaemon
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+
