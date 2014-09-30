@@ -15,6 +15,7 @@ echo "rt_dir = $rt_dir"
 echo "Delete inflated web application from container..."
 war_dir=$packages_dir/wars
 echo "war_dir is $war_dir"
+cd $war_dir
 
 for app in $war_dir/*.war
 do

@@ -10,7 +10,7 @@
 usage() {
     echo "cronus package application, and upload to cronusmaster"
     echo "  package: ./package.sh"
-    echo "  package and upload: ./package.sh upload (require $cronusmaster=cronusmaster_ip)"
+    echo "  package and upload: ./package.sh upload (export cronusmaster=host)"
     exit 0;
 }
 
@@ -42,7 +42,7 @@ rm -rf target_cronus
 
 DIR=$(cd "$(dirname "$0")"; pwd) # default current dir
 appname="pyserver" # name of the app
-version="0.1.`date +%Y%m%d%H%M`" # package version
+version="0.1.`date +%Y%m%d%H%M%S`" # package version
 pkgsrc=`ls $DIR` # include everything in package
 platform="all" # platform is x64 or x86
 pkgname="$appname-$version.$platform.cronus"
@@ -52,7 +52,11 @@ wget -qO- 'http://www.stackscaling.com/downloads/package_cronus' | DIR=$DIR appn
 mkdir target_cronus
 mv $pkgname $pkgname.prop target_cronus/
 
-if [[ $1 == "upload" ]] && [[ ! -z $cronusmaster ]]; then
-    echo "upload cronus package to cronusmaster at $cronusmaster"
-    curl -F "data=@target_cronus/$pkgname" http://$cronusmaster:9000/agent/uploadPkg
+if [[ $1 == "upload" ]]; then
+    if [[ ! -z $cronusmaster ]]; then
+        echo "upload cronus package to cronusmaster at $cronusmaster"
+        curl -F "data=@target_cronus/$pkgname" http://$cronusmaster:9000/agent/uploadPkg
+    else
+        echo "export cronusmaster=host to upload package"
+    fi
 fi

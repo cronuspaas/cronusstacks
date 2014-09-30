@@ -18,6 +18,6 @@ public class HelloServlet extends HttpServlet {
 	p.load(this.getClass().getClassLoader().getResourceAsStream("app.properties"));
         // Very simple - just return some plain text
         PrintWriter writer = response.getWriter();
-        writer.print(String.format("%s Cronus", p.getProperty("greeting", "Hello")));
+        writer.print(String.format("%s cronus from tomcat", p.getProperty("greeting", "Hello")));
     }
 }

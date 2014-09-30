@@ -23,8 +23,9 @@ echo -e "Setting the required permissions to container bin directory"
 chmod 755 $container_home/bin/*
 
 echo -e "Copying web application to container..."
-war_dir=$package_dir/wars
+war_dir=$packages_dir/wars
 echo -e "war_dir = $war_dir"
+cd $war_dir
 
 for app in $war_dir/*.war
 do
