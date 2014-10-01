@@ -54,7 +54,7 @@ fi
 
 # Wait for app to come up and run the ecv check
 ecv_check=`curl -qsS $ecv_url 2>/dev/null | sed -e 's/\([a-z]*\)/\1/'`
-ecv_check_value="hello cronus!"
+ecv_check_value="hello cronus from pyserver!"
 tries=0
 
 while [[ $ecv_check != $ecv_check_value ]] ; do
