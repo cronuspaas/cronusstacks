@@ -6,7 +6,7 @@ abspath=$(cd -P ${0%/*} && echo $PWD/${0##*/}) # absolute path of this script
 scripts_dir=`dirname "$abspath"` # scripts dir (i.e. where this script is located)
 packages_dir=$(cd -P $scripts_dir/../.. && echo $PWD) # used to unpack node
 
-hostname=`hostname`
+hostname="127.0.0.1"
 app_name=helloworld
 rt_name=container_runtime
 port=1337
